@@ -62,7 +62,7 @@ export default function Sidebar() {
             )}
           >
             <span>
-              ALL BOARDS (<span className="text-green-400">{TESTING_BOARDS.length}</span>)
+              ALL BOARDS (<span className="font-semibold">{TESTING_BOARDS.length}</span>)
             </span>
           </div>
         )}
@@ -95,7 +95,7 @@ export default function Sidebar() {
                 </button>
                 {activeBoard === board.id && (
                   <motion.div
-                    className="absolute inset-0 -z-10 rounded-md bg-green-400"
+                    className="absolute inset-0 -z-10 rounded-md bg-accent"
                     layoutId="active-board"
                     transition={{
                       type: "spring",
@@ -110,7 +110,7 @@ export default function Sidebar() {
               id="sidebar-create-new-board"
               className={cn("mt-1 px-2 py-2.5", isCollapsed && "size-12 w-full")}
             >
-              {isCollapsed ? <Plus className="size-5" /> : "Create new board"}
+              {isCollapsed ? <Plus className="size-5" /> : "New board"}
             </Button>
           </div>
         </LayoutGroup>
@@ -129,7 +129,7 @@ function Logo({ isSidebarCollapsed }: { isSidebarCollapsed: boolean }) {
         isSidebarCollapsed && "justify-center",
       )}
     >
-      <LayoutDashboard className="size-8 fill-green-400 stroke-[2] text-green-400" />
+      <LayoutDashboard className="size-8 fill-rose-400 stroke-[2] text-rose-400" />
       {!isSidebarCollapsed && (
         <span className="absolute ml-10 mt-0.5 text-2xl font-bold">Kanban</span>
       )}
