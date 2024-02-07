@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { FolderKanban, LayoutDashboard } from "lucide-react";
+import { FolderKanban, LayoutDashboard, Plus } from "lucide-react";
 import { LayoutGroup, motion } from "framer-motion";
 import { ResizableHandle, ResizablePanel } from "@/components/ui/resizable";
 import { type ImperativePanelHandle } from "react-resizable-panels";
 import { cn } from "@/lib/utils";
 import useWindowSize from "@/hooks/useWindowSize";
+import { Button } from "./ui/button";
 
 const TEST_BOARDS_LENGTH = 4;
 
@@ -13,22 +14,27 @@ const TESTING_BOARDS = Array.from({ length: TEST_BOARDS_LENGTH }, (_, index) => 
   title: `Board ${index + 1}`,
 }));
 
+// TODO: Replace with real data from the db
 export default function Sidebar() {
   const { width: windowWidth } = useWindowSize();
   const ref = useRef<ImperativePanelHandle>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeBoard, setActiveBoard] = useState(1);
+  const [showHandle, setShowHandle] = useState(false);
 
   useEffect(() => {
     if (!ref.current) return;
     if (windowWidth < 550) {
       ref.current.collapse();
-    }
+      setShowHandle(false);
+    } else setShowHandle(true);
   }, [windowWidth]);
 
-  const sidebarMaxSize = 60;
-  const sidebarMinSize = windowWidth < 550 ? 60 : 20;
-  const sidebarDefaultSize = windowWidth < 550 ? 60 : 20;
+  // TODO: Depending on the windowWidth, the sidebar should have different min, max, default sizes
+  const sidebarMaxSize = 35;
+  const sidebarMinSize = 12;
+  const sidebarDefaultSize = 20;
+  const sidebarCollapsedSize = 3;
 
   return (
     <>
@@ -38,7 +44,7 @@ export default function Sidebar() {
         minSize={sidebarMinSize}
         maxSize={sidebarMaxSize}
         collapsible={true}
-        collapsedSize={3}
+        collapsedSize={sidebarCollapsedSize}
         defaultSize={sidebarDefaultSize}
         onCollapse={() => setIsCollapsed(true)}
         onExpand={() => setIsCollapsed(false)}
@@ -56,7 +62,7 @@ export default function Sidebar() {
             )}
           >
             <span>
-              ALL BOARDS (<span className="text-green-300">{TESTING_BOARDS.length}</span>)
+              ALL BOARDS (<span className="text-green-400">{TESTING_BOARDS.length}</span>)
             </span>
           </div>
         )}
@@ -89,7 +95,7 @@ export default function Sidebar() {
                 </button>
                 {activeBoard === board.id && (
                   <motion.div
-                    className="absolute inset-0 -z-10 rounded-md bg-green-600"
+                    className="absolute inset-0 -z-10 rounded-md bg-green-400"
                     layoutId="active-board"
                     transition={{
                       type: "spring",
@@ -100,10 +106,16 @@ export default function Sidebar() {
                 )}
               </div>
             ))}
+            <Button
+              id="sidebar-create-new-board"
+              className={cn("mt-1 px-2 py-2.5", isCollapsed && "size-12 w-full")}
+            >
+              {isCollapsed ? <Plus className="size-5" /> : "Create new board"}
+            </Button>
           </div>
         </LayoutGroup>
       </ResizablePanel>
-      <ResizableHandle withHandle />
+      <ResizableHandle withHandle={showHandle} />
     </>
   );
 }
@@ -117,7 +129,7 @@ function Logo({ isSidebarCollapsed }: { isSidebarCollapsed: boolean }) {
         isSidebarCollapsed && "justify-center",
       )}
     >
-      <LayoutDashboard className="size-8 fill-green-600 stroke-[2] text-green-600" />
+      <LayoutDashboard className="size-8 fill-green-400 stroke-[2] text-green-400" />
       {!isSidebarCollapsed && (
         <span className="absolute ml-10 mt-0.5 text-2xl font-bold">Kanban</span>
       )}

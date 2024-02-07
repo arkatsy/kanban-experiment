@@ -13,7 +13,7 @@ export default function App() {
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <ResizablePanelGroup className="min-h-screen" direction="horizontal">
+    <ResizablePanelGroup autoSaveId="persistence" className="min-h-screen" direction="horizontal">
       {children}
     </ResizablePanelGroup>
   );
