@@ -8,14 +8,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import useTheme from "@/hooks/useTheme";
-import { Separator } from "./ui/separator";
-import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
-import { Label } from "./ui/label";
-import useWindowSize from "@/hooks/useWindowSize";
+import useTheme from "@/hooks/use-theme";
+import { Separator } from "@/components/ui/separator";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import useWindowSize from "@/hooks/use-window-size";
+import useActiveBoardIdStore from "@/hooks/use-active-board-id-store";
+import { useLiveQuery } from "dexie-react-hooks";
+import { db } from "@/db/db";
 
 export default function Body() {
   const { width: windowWidth } = useWindowSize();
+  const activeBoardId = useActiveBoardIdStore((state) => state.activeBoardId);
+  const activeBoard = useLiveQuery(() => db.getBoard(activeBoardId || 0), [activeBoardId]);
+
   const isNotDesktop = windowWidth < 650;
   return (
     <ResizablePanel>
@@ -23,7 +29,7 @@ export default function Body() {
         id="header"
         className="flex h-20 items-center justify-between border-b px-2 md:px-4 lg:px-6"
       >
-        <h2 className="text-2xl font-semibold">Roadmap</h2>
+        <h2 className="text-2xl font-semibold">{activeBoard ? activeBoard.title : ""}</h2>
         <div className="flex gap-2">
           <Button variant="secondary">{isNotDesktop ? <Plus /> : <span>New Task</span>}</Button>
           <Button variant="ghost" size="icon">

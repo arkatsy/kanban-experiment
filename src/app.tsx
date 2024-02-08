@@ -1,6 +1,6 @@
 import { ResizablePanelGroup } from "@/components/ui/resizable";
-import Sidebar from "@/components/sidebar";
-import Body from "@/components/body";
+import Sidebar from "@/components/features/sidebar/sidebar";
+import Body from "@/components/features/body";
 
 export default function App() {
   return (
@@ -13,7 +13,7 @@ export default function App() {
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <ResizablePanelGroup autoSaveId="persistence" className="min-h-screen" direction="horizontal">
+    <ResizablePanelGroup autoSaveId="persistence" className="min-h-dvh" direction="horizontal">
       {children}
     </ResizablePanelGroup>
   );
