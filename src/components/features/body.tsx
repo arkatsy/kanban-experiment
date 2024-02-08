@@ -1,5 +1,5 @@
-import { Settings as SettingsIcon, MoreVertical, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Settings as SettingsIcon, Plus, Trash2, Loader2 } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { ResizablePanel } from "@/components/ui/resizable";
 import {
   Dialog,
@@ -15,14 +15,52 @@ import { Label } from "@/components/ui/label";
 import useWindowSize from "@/hooks/use-window-size";
 import useActiveBoardIdStore from "@/hooks/use-active-board-id-store";
 import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/db/db";
+import { Board, db } from "@/db/db";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { toast } from "@/components/ui/use-toast";
 
 export default function Body() {
   const { width: windowWidth } = useWindowSize();
-  const activeBoardId = useActiveBoardIdStore((state) => state.activeBoardId);
+  const { activeBoardId, setActiveBoardId } = useActiveBoardIdStore();
   const activeBoard = useLiveQuery(() => db.getBoard(activeBoardId || 0), [activeBoardId]);
 
   const isNotDesktop = windowWidth < 650;
+
+  const onBoardDeletedSuccess = async (deletedBoard: Board) => {
+    toast({
+      title: "Board Deleted",
+      description: `"${deletedBoard.title}" was deleted successfully`,
+    });
+
+    const firstBoard = await db.getFirstBoard();
+
+    if (firstBoard) {
+      setActiveBoardId(firstBoard.id);
+      return;
+    }
+
+    setActiveBoardId(null);
+  };
+
+  const onBoardDeletedError = (error: string, undeletedBoard: Board) => {
+    toast({
+      title: `Error while deleting the board ${undeletedBoard.title}`,
+      description: error,
+    });
+  };
+
   return (
     <ResizablePanel>
       <div
@@ -31,10 +69,16 @@ export default function Body() {
       >
         <h2 className="text-2xl font-semibold">{activeBoard ? activeBoard.title : ""}</h2>
         <div className="flex gap-2">
-          <Button variant="secondary">{isNotDesktop ? <Plus /> : <span>New Task</span>}</Button>
-          <Button variant="ghost" size="icon">
-            <MoreVertical />
-          </Button>
+          {activeBoard && (
+            <Button variant="secondary">{isNotDesktop ? <Plus /> : <span>New Task</span>}</Button>
+          )}
+          {activeBoard && (
+            <DeleteBoardButton
+              board={activeBoard}
+              onDeleteSuccess={onBoardDeletedSuccess}
+              onDeleteError={onBoardDeletedError}
+            />
+          )}
           <Settings asChild>
             <Button variant="ghost" size="icon">
               <SettingsIcon />
@@ -46,6 +90,75 @@ export default function Body() {
         <Board />
       </div>
     </ResizablePanel>
+  );
+}
+
+function DeleteBoardButton({
+  board,
+  onDeleteSuccess,
+  onDeleteError,
+}: {
+  board: Board;
+  onDeleteSuccess: (board: Board) => void;
+  onDeleteError: (error: string, board: Board) => void;
+}) {
+  // TODO: Prompt user to confirm deletion by typing the board's title
+  const [isOpen, setIsOpen] = useState(false);
+
+  // TODO: Needs more descriptive name
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleBoardDeletion = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.preventDefault();
+
+    try {
+      setIsLoading(true);
+      await db.deleteBoard(board.id);
+      onDeleteSuccess(board);
+    } catch (error: unknown) {
+      onDeleteError("Failed to delete board", board);
+    } finally {
+      setIsLoading(false);
+      setIsOpen(false);
+    }
+  };
+
+  return (
+    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+      <AlertDialogTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <Trash2 className="size-6 text-rose-500" />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Board</AlertDialogTitle>
+          <AlertDialogDescription className="flex flex-col gap-1">
+            <span>
+              Are you sure you want to delete the board "
+              <span className="font-semibold text-primary">{board.title}</span>"?
+            </span>
+            <span className="font-medium">This action is irreversible.</span>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            className={cn(buttonVariants({ variant: "destructive" }))}
+            onClick={handleBoardDeletion}
+          >
+            {isLoading ? (
+              <div className="flex gap-1">
+                <Loader2 className="animate-spin" />
+                <span>Deleting</span>
+              </div>
+            ) : (
+              "Delete"
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 

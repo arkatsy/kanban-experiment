@@ -76,7 +76,10 @@ export default function CreateNewBoardButton({
       _onOpenChange(false);
       if (onNewBoardSuccess) onNewBoardSuccess(board);
     } catch (error: unknown) {
-      if (onNewBoardFail) onNewBoardFail("Failed to create new board");
+      if (onNewBoardFail) {
+        onNewBoardFail("Failed to create new board");
+        console.error(error);
+      }
     } finally {
       setIsLoading(false);
     }

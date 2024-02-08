@@ -50,6 +50,15 @@ class KanbanDB extends Dexie {
     const board = (await this.boards.get(id)) as Board;
     return board;
   }
+
+  async deleteBoard(id: number) {
+    await this.boards.delete(id);
+  }
+
+  async getFirstBoard() {
+    const board = await db.getAllBoards();
+    return board[0];
+  }
 }
 
 export const db = new KanbanDB();

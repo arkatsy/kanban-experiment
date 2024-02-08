@@ -17,7 +17,10 @@ export default function Sidebar() {
   const ref = useRef<ImperativePanelHandle>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showHandle, setShowHandle] = useState(false);
+
+  // TODO: dialog state is not necessary anymore here, should be managed by the BoardsList component
   const [isNewBoardDialogOpen, setIsNewBoardDialogOpen] = useState(false);
+
   const setActiveBoardId = useActiveBoardIdStore((state) => state.setActiveBoardId);
   const boards = useLiveQuery(() => db.getAllBoards());
 
@@ -29,6 +32,7 @@ export default function Sidebar() {
     } else setShowHandle(true);
   }, [windowWidth]);
 
+  // TODO: Descriptions that are comming from other components should be more consistent. See also Body component (delete board)
   const onNewBoardSuccess = (board: Board) => {
     setActiveBoardId(board.id);
     toast({
@@ -105,12 +109,13 @@ function BoardsList({ isCollapsed, children }: BoardsListProps) {
     if (activeBoardId === null) setActiveBoardId(boards[0].id);
   }, [activeBoardId, boards, setActiveBoardId]);
 
-  if (boards === undefined || activeBoardId === undefined) return null; // TODO: Show loading state (skeleton)
+  if (boards === undefined || activeBoardId === undefined) return null; // TODO: Show loading indicator
 
   const handleBoardClick = async (boardId: number) => {
     setActiveBoardId(boardId);
   };
 
+  // TODO: Add tooltips to the buttons when sidebar is collapsed
   return (
     <LayoutGroup>
       <div
