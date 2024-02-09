@@ -33,6 +33,7 @@ export default function Sidebar() {
   }, [windowWidth]);
 
   // TODO: Descriptions that are comming from other components should be more consistent. See also Body component (delete board)
+  // TODO: On board creation success the focus should be on the new board, not the button creation.
   const onNewBoardSuccess = (board: Board) => {
     setActiveBoardId(board.id);
     toast({
@@ -121,14 +122,17 @@ function BoardsList({ isCollapsed, children }: BoardsListProps) {
       <div
         id="sidebar-boards-list"
         className="flex max-h-[calc(100dvh-150px)] flex-col gap-1 overflow-hidden overflow-y-auto px-2 py-1"
+        style={{
+          scrollbarWidth: "none",
+        }}
       >
         {boards.map((board) => (
           <div
             id="sidebar-board-button"
-            className={cn(
-              "relative",
-              // boards.length < 10
-            )}
+            className="relative"
+            style={{
+              scrollbarWidth: "none",
+            }}
             key={board.id}
           >
             <Button
