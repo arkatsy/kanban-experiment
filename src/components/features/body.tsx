@@ -1,4 +1,13 @@
-import { Settings as SettingsIcon, Plus, Trash2, Loader2, MoreVertical } from "lucide-react";
+import {
+  Settings as SettingsIcon,
+  Plus,
+  Trash2,
+  Loader2,
+  MoreVertical,
+  SquarePen,
+  X,
+  Check,
+} from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { ResizablePanel } from "@/components/ui/resizable";
 import {
@@ -15,7 +24,7 @@ import { Label } from "@/components/ui/label";
 import useWindowSize from "@/hooks/use-window-size";
 import useActiveBoardIdStore from "@/hooks/use-active-board-id-store";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Board, db } from "@/db/db";
+import { type Board, db } from "@/db/db";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,7 +36,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
 import {
@@ -36,6 +45,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import FocusTrap from "focus-trap-react";
 
 export default function Body() {
   const { width: windowWidth } = useWindowSize();
@@ -73,7 +84,7 @@ export default function Body() {
         id="header"
         className="flex h-20 items-center justify-between border-b px-2 md:px-4 lg:px-6"
       >
-        <h2 className="text-2xl font-semibold">{activeBoard ? activeBoard.title : ""}</h2>
+        {activeBoard && <BoardTitle board={activeBoard} />}
         <div className="flex gap-2">
           {activeBoard && (
             <Button variant="secondary">{isNotDesktop ? <Plus /> : <span>New Task</span>}</Button>
@@ -96,6 +107,120 @@ export default function Body() {
         <Board />
       </div>
     </ResizablePanel>
+  );
+}
+
+function BoardTitle({ board }: { board: Board }) {
+  const [isEdit, setIsEdit] = useState(false);
+  const [title, setTitle] = useState(board.title);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const startEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsEdit(true);
+  };
+
+  const endEdit = () => setIsEdit(false);
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value);
+
+  const submitNewTitle = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (title === board.title) {
+      endEdit();
+      return;
+    }
+
+    try {
+      await db.updateBoardTitle(board.id, title);
+      toast({
+        title: "Board Title Updated",
+        description: "Board title was updated successfully",
+      });
+    } catch (error: unknown) {
+      toast({
+        title: "Error while updating the board title",
+        description: "Failed to update the board title",
+      });
+    } finally {
+      endEdit();
+    }
+  };
+
+  useEffect(() => {
+    const handleFormKeydown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        endEdit();
+      }
+    };
+
+    // TODO: Extract to a useOutsideClick hook
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (formRef.current && !formRef.current.contains(e.target as Node)) {
+        endEdit();
+      }
+    };
+
+    if (isEdit) {
+      window.addEventListener("keydown", handleFormKeydown);
+
+      // The click event that goes into edit mode is also caught by the outside click event here resulting
+      // in the handleOutsideClick being called which then results in closing the edit mode immediately.
+      // The small delay is a workaround for that.
+      setTimeout(() => {
+        window.addEventListener("click", handleOutsideClick);
+      }, 100);
+
+      return () => {
+        window.removeEventListener("keydown", handleFormKeydown);
+        window.removeEventListener("click", handleOutsideClick);
+      };
+    }
+  }, [isEdit]);
+
+  if (isEdit) {
+    return (
+      <form ref={formRef} onSubmit={submitNewTitle}>
+        <FocusTrap
+          focusTrapOptions={{
+            allowOutsideClick: true,
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <Input
+              autoFocus
+              value={title}
+              onChange={handleTitleChange}
+              className="h-10 text-2xl font-semibold"
+            />
+            <div className="flex gap-1">
+              <Button variant="ghost" size="icon" type="submit">
+                <Check />
+              </Button>
+              <Button variant="ghost" size="icon">
+                <X />
+              </Button>
+            </div>
+          </div>
+        </FocusTrap>
+      </form>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      {/* 
+        It'd be better for it to be on triple click. 
+        See https://stackoverflow.com/questions/6480060/how-do-i-listen-for-triple-clicks-in-javascript 
+      */}
+      <h2 className="text-2xl font-semibold" onDoubleClick={startEdit}>
+        {board.title}
+      </h2>
+      <Button variant="ghost" size="icon" onClick={startEdit}>
+        <SquarePen />
+      </Button>
+    </div>
   );
 }
 

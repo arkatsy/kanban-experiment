@@ -59,6 +59,10 @@ class KanbanDB extends Dexie {
     const board = await db.getAllBoards();
     return board[0];
   }
+
+  async updateBoardTitle(id: number, title: string) {
+    await this.boards.update(id, { title });
+  }
 }
 
 export const db = new KanbanDB();
