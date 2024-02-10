@@ -12,6 +12,7 @@ import { type ImperativePanelHandle } from "react-resizable-panels";
 import CreateNewBoardButton from "@/components/features/sidebar/create-new-board-button";
 import useActiveBoardIdStore from "@/hooks/use-active-board-id-store";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import Spinner from "@/components/features/spinner";
 
 export default function Sidebar() {
   const { width: windowWidth } = useWindowSize();
@@ -111,7 +112,12 @@ function BoardsList({ isCollapsed, children }: BoardsListProps) {
     if (activeBoardId === null) setActiveBoardId(boards[0].id);
   }, [activeBoardId, boards, setActiveBoardId]);
 
-  if (boards === undefined || activeBoardId === undefined) return null; // TODO: Show loading indicator
+  if (boards === undefined || activeBoardId === undefined)
+    return (
+      <div className="flex items-center justify-center">
+        <Spinner />
+      </div>
+    );
 
   const handleBoardClick = async (boardId: number) => {
     setActiveBoardId(boardId);

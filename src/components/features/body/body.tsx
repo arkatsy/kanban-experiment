@@ -48,6 +48,7 @@ import {
 import { Input } from "@/components/ui/input";
 import FocusTrap from "focus-trap-react";
 import Board from "./board";
+import Spinner from "@/components/features/spinner";
 
 export default function Body() {
   const { width: windowWidth } = useWindowSize();
@@ -85,7 +86,7 @@ export default function Body() {
         id="header"
         className="flex h-20 items-center justify-between border-b px-2 md:px-4 lg:px-6"
       >
-        {activeBoard && <BoardTitle board={activeBoard} />}
+        {activeBoard && <BoardTitle />}
         <div className="flex gap-2">
           {activeBoard && (
             <Button variant="secondary">{isNotDesktop ? <Plus /> : <span>New Task</span>}</Button>
@@ -111,10 +112,19 @@ export default function Body() {
   );
 }
 
-function BoardTitle({ board }: { board: TBoard }) {
+function BoardTitle() {
+  const activeBoardId = useActiveBoardIdStore((state) => state.activeBoardId);
+  const board = useLiveQuery(() => db.getBoard(activeBoardId || 0), [activeBoardId]);
+
   const [isEdit, setIsEdit] = useState(false);
-  const [title, setTitle] = useState(board.title);
+  const [title, setTitle] = useState(board ? board.title : "");
   const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (board) {
+      setTitle(board.title);
+    }
+  }, [board]);
 
   const startEdit = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -127,6 +137,7 @@ function BoardTitle({ board }: { board: TBoard }) {
 
   const submitNewTitle = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!board) return;
 
     if (title === board.title) {
       endEdit();
@@ -179,6 +190,8 @@ function BoardTitle({ board }: { board: TBoard }) {
       };
     }
   }, [isEdit]);
+
+  if (!board) return <Spinner />;
 
   if (isEdit) {
     return (

@@ -56,6 +56,7 @@ class KanbanDB extends Dexie {
   }
 
   async getFirstBoard() {
+    // TODO: Make a proper query instead of fetching everything
     const board = await db.getAllBoards();
     return board[0];
   }
