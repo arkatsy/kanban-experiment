@@ -6,7 +6,6 @@ import { ThemeProvider } from "@/context/theme.tsx";
 import { Toaster } from "./components/ui/toaster";
 
 // TODO: Add reduce motion for framer-motion animations and css transitions
-// TODO: Analyze and reduce bundle size
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider>
