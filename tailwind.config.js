@@ -1,4 +1,5 @@
 import tailwindAnimate from "tailwindcss-animate";
+import colors from "tailwindcss/colors"
 
 /** @type {import("tailwindcss").Config} */
 export default {
@@ -32,8 +33,10 @@ export default {
           foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          // DEFAULT: "hsl(var(--destructive))",
+          DEFAULT: colors.rose[600],
+          foreground: colors.rose[50],
+          // foreground: "hsl(var(--destructive-foreground))",
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",

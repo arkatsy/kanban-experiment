@@ -1,4 +1,4 @@
-import { Settings as SettingsIcon, Plus, Trash2, Loader2 } from "lucide-react";
+import { Settings as SettingsIcon, Plus, Trash2, Loader2, MoreVertical } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { ResizablePanel } from "@/components/ui/resizable";
 import {
@@ -30,6 +30,12 @@ import {
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Body() {
   const { width: windowWidth } = useWindowSize();
@@ -73,10 +79,10 @@ export default function Body() {
             <Button variant="secondary">{isNotDesktop ? <Plus /> : <span>New Task</span>}</Button>
           )}
           {activeBoard && (
-            <DeleteBoardButton
+            <BoardSettings
               board={activeBoard}
-              onDeleteSuccess={onBoardDeletedSuccess}
               onDeleteError={onBoardDeletedError}
+              onDeleteSuccess={onBoardDeletedSuccess}
             />
           )}
           <Settings asChild>
@@ -93,7 +99,8 @@ export default function Body() {
   );
 }
 
-function DeleteBoardButton({
+// TODO: Add more board specific settings
+function BoardSettings({
   board,
   onDeleteSuccess,
   onDeleteError,
@@ -103,7 +110,7 @@ function DeleteBoardButton({
   onDeleteError: (error: string, board: Board) => void;
 }) {
   // TODO: Prompt user to confirm deletion by typing the board's title
-  const [isOpen, setIsOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   // TODO: Needs more descriptive name
   const [isLoading, setIsLoading] = useState(false);
@@ -119,45 +126,57 @@ function DeleteBoardButton({
       onDeleteError("Failed to delete board", board);
     } finally {
       setIsLoading(false);
-      setIsOpen(false);
+      setIsDeleteDialogOpen(false);
     }
   };
 
   return (
-    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-      <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Trash2 className="size-6 text-rose-500" />
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete Board</AlertDialogTitle>
-          <AlertDialogDescription className="flex flex-col gap-1">
-            <span>
-              Are you sure you want to delete the board "
-              <span className="font-semibold text-primary">{board.title}</span>"?
-            </span>
-            <span className="font-medium">This action is irreversible.</span>
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            className={cn(buttonVariants({ variant: "destructive" }))}
-            onClick={handleBoardDeletion}
-          >
-            {isLoading ? (
-              <div className="flex gap-1">
-                <Loader2 className="animate-spin" />
-                <span>Deleting</span>
-              </div>
-            ) : (
-              "Delete"
-            )}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
+    <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <MoreVertical />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="p-0">
+          <DropdownMenuItem className="p-0">
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" className="flex items-center gap-2">
+                Delete Board
+                <Trash2 className="size-5 text-destructive-foreground" />
+              </Button>
+            </AlertDialogTrigger>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Board</AlertDialogTitle>
+            <AlertDialogDescription className="flex flex-col gap-1">
+              <span>
+                Are you sure you want to delete the board "
+                <span className="font-semibold text-primary">{board.title}</span>"?
+              </span>
+              <span className="font-medium">This action is irreversible.</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className={cn(buttonVariants({ variant: "destructive" }))}
+              onClick={handleBoardDeletion}
+            >
+              {isLoading ? (
+                <div className="flex gap-1">
+                  <Loader2 className="animate-spin" />
+                  <span>Deleting</span>
+                </div>
+              ) : (
+                "Delete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </DropdownMenu>
     </AlertDialog>
   );
 }
