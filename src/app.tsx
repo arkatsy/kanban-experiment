@@ -1,6 +1,6 @@
 import { ResizablePanelGroup } from "@/components/ui/resizable";
 import Sidebar from "@/components/features/sidebar/sidebar";
-import Body from "@/components/features/body";
+import Body from "@/components/features/body/body";
 
 export default function App() {
   return (

@@ -24,7 +24,7 @@ import { Label } from "@/components/ui/label";
 import useWindowSize from "@/hooks/use-window-size";
 import useActiveBoardIdStore from "@/hooks/use-active-board-id-store";
 import { useLiveQuery } from "dexie-react-hooks";
-import { type Board, db } from "@/db/db";
+import { type Board as TBoard, db } from "@/db/db";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import FocusTrap from "focus-trap-react";
+import Board from "./board";
 
 export default function Body() {
   const { width: windowWidth } = useWindowSize();
@@ -55,7 +56,7 @@ export default function Body() {
 
   const isNotDesktop = windowWidth < 650;
 
-  const onBoardDeletedSuccess = async (deletedBoard: Board) => {
+  const onBoardDeletedSuccess = async (deletedBoard: TBoard) => {
     toast({
       title: "Board Deleted",
       description: `"${deletedBoard.title}" was deleted successfully`,
@@ -71,7 +72,7 @@ export default function Body() {
     setActiveBoardId(null);
   };
 
-  const onBoardDeletedError = (error: string, undeletedBoard: Board) => {
+  const onBoardDeletedError = (error: string, undeletedBoard: TBoard) => {
     toast({
       title: `Error while deleting the board ${undeletedBoard.title}`,
       description: error,
@@ -110,7 +111,7 @@ export default function Body() {
   );
 }
 
-function BoardTitle({ board }: { board: Board }) {
+function BoardTitle({ board }: { board: TBoard }) {
   const [isEdit, setIsEdit] = useState(false);
   const [title, setTitle] = useState(board.title);
   const formRef = useRef<HTMLFormElement>(null);
@@ -230,9 +231,9 @@ function BoardSettings({
   onDeleteSuccess,
   onDeleteError,
 }: {
-  board: Board;
-  onDeleteSuccess: (board: Board) => void;
-  onDeleteError: (error: string, board: Board) => void;
+  board: TBoard;
+  onDeleteSuccess: (board: TBoard) => void;
+  onDeleteError: (error: string, board: TBoard) => void;
 }) {
   // TODO: Prompt user to confirm deletion by typing the board's title
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -346,8 +347,4 @@ function Settings({ children, asChild }: { children: React.ReactNode; asChild?: 
       </DialogContent>
     </Dialog>
   );
-}
-
-function Board() {
-  return <div>Board</div>;
 }
