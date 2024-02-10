@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import { type ImperativePanelHandle } from "react-resizable-panels";
 import CreateNewBoardButton from "@/components/features/sidebar/create-new-board-button";
 import useActiveBoardIdStore from "@/hooks/use-active-board-id-store";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function Sidebar() {
   const { width: windowWidth } = useWindowSize();
@@ -116,60 +117,67 @@ function BoardsList({ isCollapsed, children }: BoardsListProps) {
     setActiveBoardId(boardId);
   };
 
-  // TODO: Add tooltips to the buttons when sidebar is collapsed
   return (
-    <LayoutGroup>
-      <div
-        id="sidebar-boards-list"
-        className="flex max-h-[calc(100dvh-150px)] flex-col gap-1 overflow-hidden overflow-y-auto px-2 py-1"
-        style={{
-          scrollbarWidth: "none",
-        }}
-      >
-        {boards.map((board) => (
-          <div
-            id="sidebar-board-button"
-            className="relative"
-            style={{
-              scrollbarWidth: "none",
-            }}
-            key={board.id}
-          >
-            <Button
-              variant="ghost"
-              className={cn(
-                "flex w-full justify-start gap-4 rounded-md px-4 py-2.5 hover:bg-secondary/50",
-                isCollapsed && "size-12 w-full",
-                activeBoardId === board.id && "hover:bg-transparent",
-              )}
-              onClick={() => handleBoardClick(board.id)}
+    <TooltipProvider delayDuration={0} disableHoverableContent>
+      <LayoutGroup>
+        <div
+          id="sidebar-boards-list"
+          className="flex max-h-[calc(100dvh-150px)] flex-col gap-1 overflow-hidden overflow-y-auto px-2 py-1"
+          style={{
+            scrollbarWidth: "none",
+          }}
+        >
+          {boards.map((board) => (
+            <div
+              id="sidebar-board-button"
+              className="relative"
+              style={{
+                scrollbarWidth: "none",
+              }}
+              key={board.id}
             >
-              <FolderKanban
-                className={cn(
-                  "absolute size-5",
-                  isCollapsed && "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform",
-                )}
-              />
-              {!isCollapsed && (
-                <span className="ml-7 overflow-hidden overflow-ellipsis whitespace-nowrap text-sm">
-                  {board.title}
-                </span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "flex w-full justify-start gap-4 rounded-md px-4 py-2.5 hover:bg-secondary/50",
+                      isCollapsed && "size-12 w-full",
+                      activeBoardId === board.id && "hover:bg-transparent",
+                    )}
+                    onClick={() => handleBoardClick(board.id)}
+                  >
+                    <FolderKanban
+                      className={cn(
+                        "absolute size-5",
+                        isCollapsed &&
+                          "left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform",
+                      )}
+                    />
+                    {!isCollapsed && (
+                      <span className="ml-7 overflow-hidden overflow-ellipsis whitespace-nowrap text-sm">
+                        {board.title}
+                      </span>
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                {isCollapsed && <TooltipContent>{board.title}</TooltipContent>}
+              </Tooltip>
+              {activeBoardId === board.id && (
+                <motion.div
+                  className="absolute inset-0 -z-10 rounded-md bg-accent"
+                  layoutId="active-board"
+                  transition={{
+                    duration: 0.2,
+                  }}
+                />
               )}
-            </Button>
-            {activeBoardId === board.id && (
-              <motion.div
-                className="absolute inset-0 -z-10 rounded-md bg-accent"
-                layoutId="active-board"
-                transition={{
-                  duration: 0.2,
-                }}
-              />
-            )}
-          </div>
-        ))}
-      </div>
-      {children}
-    </LayoutGroup>
+            </div>
+          ))}
+        </div>
+        {children}
+      </LayoutGroup>
+    </TooltipProvider>
   );
 }
 
