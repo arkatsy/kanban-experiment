@@ -105,14 +105,13 @@ export default function Body() {
           </Settings>
         </div>
       </div>
-      <div className="mt-5 px-2 md:px-4 lg:px-6">
-        <Board />
-      </div>
+      <Board />
     </ResizablePanel>
   );
 }
 
 function BoardTitle() {
+  // TODO: Abstract the title with the edit mode to a separate component (needed for the board columns)
   const activeBoardId = useActiveBoardIdStore((state) => state.activeBoardId);
   const board = useLiveQuery(() => db.getBoard(activeBoardId || 0), [activeBoardId]);
 
@@ -224,8 +223,8 @@ function BoardTitle() {
 
   return (
     <div className="flex items-center gap-2">
-      {/* 
-        It'd be better for it to be on triple click. 
+      {/*
+        TODO: It'd be better for it to be on triple click. (or maybe single click ??)
         See https://stackoverflow.com/questions/6480060/how-do-i-listen-for-triple-clicks-in-javascript 
       */}
       <h2 className="text-2xl font-semibold" onDoubleClick={startEdit}>
