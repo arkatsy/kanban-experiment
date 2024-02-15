@@ -125,6 +125,7 @@ function BoardTitle() {
     }
   }, [board]);
 
+  // TODO: When going to edit mode, the title should be selected
   const startEdit = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsEdit(true);

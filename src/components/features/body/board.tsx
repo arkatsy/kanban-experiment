@@ -1,7 +1,7 @@
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { Grip, Plus } from "lucide-react";
-import { forwardRef, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Sortable from "sortablejs";
 
 type Task = {
@@ -67,7 +67,12 @@ export default function Board() {
   // TODO: Create Tasks UI
   // TODO: Make tasks draggable and droppable in both the same column & other columns
   // TODO: Add dialog to create new column
-  // TODO: Fix first column left margin when dragging / dropping
+  // TODO: Make the board scrollable in the x-axis with mouse wheel
+  // TODO: Add a setting to show / hide scrollbars
+  // TODO: Make the whole column droppable
+  // TODO: Move the board data to a state management solution
+  // TODO: Make animation duration consistent throught the app
+  // TODO: Add reduced motion. (see main.tsx)
 
   const colsRef = useRef<HTMLDivElement>(null);
   const [data, setData] = useState<Column[]>(initData);
@@ -76,9 +81,11 @@ export default function Board() {
     const cols = colsRef.current;
     if (!cols) return;
 
-    const sortable = Sortable.create(cols, {
-      handle: ".grip",
-      animation: 150,
+    const columnsSortable = Sortable.create(cols, {
+      group: "columns",
+      handle: ".column-grip",
+      easing: "ease-out",
+      animation: 250,
       onEnd: (evt) => {
         console.log(evt);
         const sourceIdx = evt.oldIndex!;
@@ -93,71 +100,98 @@ export default function Board() {
         });
       },
     });
-  }, []);
+
+    return () => {
+      columnsSortable.destroy();
+    };
+  });
 
   return (
     <div
       id="board"
       ref={colsRef}
-      className="my-4 flex h-[calc(100dvh-96px-16px)] gap-4 overflow-x-auto mx-4"
+      className="mx-4 my-4 flex h-[calc(100dvh-96px-16px)] gap-4 overflow-x-auto"
       style={{
         scrollbarWidth: "none",
       }}
     >
-      {data.map((col, idx) => (
-        <Column key={col.id} col={col} isFirst={idx === 0} />
+      {data.map((col) => (
+        <Column key={col.id}>
+          <Column.Header>
+            <Column.Name>{col.name}</Column.Name>
+            <Column.Handle className="column-grip" />
+          </Column.Header>
+          <Column.Tasks>
+            {col.tasks.map((task) => (
+              <div
+                key={task.id}
+                draggable={true}
+                className="my-2 cursor-pointer rounded-md bg-secondary px-4 py-6"
+              >
+                <h4 className="font-semibold">{task.content}</h4>
+              </div>
+            ))}
+          </Column.Tasks>
+        </Column>
       ))}
-      <Column isLast />
+      <button className="flex min-w-96 items-center justify-center rounded-lg bg-primary-foreground p-5">
+        <div className="flex items-center justify-center gap-2 text-xl font-medium text-muted-foreground">
+          <Plus />
+          <span>New Column</span>
+        </div>
+      </button>
     </div>
   );
 }
 
-// TODO: Improve types for ColumnProps or separate the last column into its own component
-type ColumnProps = {
-  col?: Column;
-  isFirst?: boolean;
-  isLast?: boolean;
+function Column({ children }: { children: React.ReactNode }) {
+  return <div className="min-w-96 rounded-lg bg-primary-foreground p-5">{children}</div>;
+}
+
+function Handle({ className }: { className?: string }) {
+  return <Grip className={cn("cursor-move text-primary/20", className)} />;
+}
+
+function Name({ className, children }: { className?: string; children: React.ReactNode }) {
+  return <h3 className={cn("text-xl font-semibold", className)}>{children}</h3>;
+}
+
+function Header({ children }: { children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between">{children}</div>
+      <Separator className="my-3" />
+    </div>
+  );
+}
+
+const Tasks = ({ children }: { children: React.ReactNode }) => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const tasks = ref.current;
+    if (!tasks) return;
+    const tasksSortable = Sortable.create(tasks, {
+      group: "tasks",
+      animation: 250,
+      fallbackOnBody: true,
+      easing: "ease-out",
+      onEnd: console.log,
+    });
+
+    return () => {
+      tasksSortable.destroy();
+    };
+  }, []);
+
+  return (
+    <div ref={ref} className="h-[calc(100dvh-200px)] select-none">
+      {children}
+    </div>
+  );
 };
 
-const Column = forwardRef<HTMLDivElement, ColumnProps>(
-  ({ col, isFirst = false, isLast = false }, ref) => {
-    if (isLast) {
-      return (
-        <button className="mr-4 flex min-w-96 items-center justify-center rounded-lg bg-primary-foreground p-5">
-          <div className="flex items-center justify-center gap-2 text-xl font-medium text-muted-foreground">
-            <Plus />
-            <span>New Column</span>
-          </div>
-        </button>
-      );
-    }
-
-    if (!col) {
-      throw new Error("Column Prop is required");
-    }
-
-    return (
-      <div
-        ref={ref}
-        className={cn("min-w-96 rounded-lg bg-primary-foreground p-5", isFirst && "ml-4")}
-      >
-        <div className="flex items-center justify-between">
-          <h3 className="text-xl font-semibold">{col.name}</h3>
-          <Grip className="grip text-primary/20 cursor-move" />
-        </div>
-        <Separator className="my-3" />
-        <div>
-          {col.tasks.map((task) => (
-            <div
-              key={task.id}
-              draggable={true}
-              className="my-2 cursor-pointer rounded-md bg-secondary px-4 py-6"
-            >
-              <h4 className="font-semibold">{task.content}</h4>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  },
-);
+Column.Header = Header;
+Column.Name = Name;
+Column.Handle = Handle;
+Column.Tasks = Tasks;
