@@ -8,7 +8,7 @@ export type Board = {
 };
 
 export type Column = {
-  name: string;
+  name: string; // TODO: Make this unique by board
   tasks: Task[];
 };
 
@@ -18,6 +18,7 @@ export type Task = {
 };
 
 class KanbanDB extends Dexie {
+  // TODO: Normalize the data
   boards!: Dexie.Table<Board, number>;
   constructor() {
     super("KanbanDB");
@@ -63,6 +64,48 @@ class KanbanDB extends Dexie {
 
   async updateBoardTitle(id: number, title: string) {
     await this.boards.update(id, { title });
+  }
+
+  async newColumn(boardId: number, name: string) {
+    const board = await this.boards.get(boardId);
+    if (board) {
+      const columns = board.columns;
+      columns.push({ name, tasks: [] });
+      await this.boards.update(boardId, { columns });
+    }
+  }
+
+  async deleteColumn(boardId: number, columnIndex: number) {
+    const board = await this.boards.get(boardId);
+    if (board) {
+      const columns = board.columns;
+      columns.splice(columnIndex, 1);
+      await this.boards.update(boardId, { columns });
+    }
+  }
+
+  async newTask(boardId: number, columnName: string, task: Task) {
+    const board = await this.boards.get(boardId);
+    if (board) {
+      const columns = board.columns;
+      const columnIndex = columns.findIndex((col) => col.name === columnName);
+      if (columnIndex !== -1) {
+        columns[columnIndex].tasks.push(task);
+        await this.boards.update(boardId, { columns });
+      }
+    }
+  }
+
+  async deleteTask(boardId: number, columnName: string, taskIndex: number) {
+    const board = await this.boards.get(boardId);
+    if (board) {
+      const columns = board.columns;
+      const columnIndex = columns.findIndex((col) => col.name === columnName);
+      if (columnIndex !== -1) {
+        columns[columnIndex].tasks.splice(taskIndex, 1);
+        await this.boards.update(boardId, { columns });
+      }
+    }
   }
 }
 

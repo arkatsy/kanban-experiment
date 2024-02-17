@@ -70,7 +70,40 @@
   * {
     @apply border-border font-sans;
   }
+
   body {
     @apply min-w-[400px] bg-background text-foreground;
+  }
+
+  /* Scrollbars */
+  *::-webkit-scrollbar {
+    height: 10px;
+    width: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    border-radius: 5px;
+    @apply bg-primary-foreground;
+  }
+
+  *::-webkit-scrollbar-track:hover {
+    @apply bg-primary-foreground;
+  }
+
+  *::-webkit-scrollbar-track:active {
+    @apply bg-primary-foreground;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    @apply bg-primary/20;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/25
+  }
+
+  *::-webkit-scrollbar-thumb:active {
+    @apply bg-primary/25
   }
 }

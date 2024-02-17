@@ -111,9 +111,9 @@ export default function Board() {
       id="board"
       ref={colsRef}
       className="mx-4 my-4 flex h-[calc(100dvh-96px-16px)] gap-4 overflow-x-auto"
-      style={{
-        scrollbarWidth: "none",
-      }}
+      // style={{
+      //   scrollbarWidth: "none",
+      // }}
     >
       {data.map((col) => (
         <Column key={col.id}>
@@ -122,6 +122,7 @@ export default function Board() {
             <Column.Handle className="column-grip" />
           </Column.Header>
           <Column.Tasks>
+          {/* TODO: Create a Column.Task component */}
             {col.tasks.map((task) => (
               <div
                 key={task.id}
@@ -134,7 +135,7 @@ export default function Board() {
           </Column.Tasks>
         </Column>
       ))}
-      <button className="flex min-w-96 items-center justify-center rounded-lg bg-primary-foreground p-5">
+      <button className="flex min-w-96 items-center justify-center rounded-lg bg-primary-foreground p-5 mb-4">
         <div className="flex items-center justify-center gap-2 text-xl font-medium text-muted-foreground">
           <Plus />
           <span>New Column</span>
@@ -145,7 +146,7 @@ export default function Board() {
 }
 
 function Column({ children }: { children: React.ReactNode }) {
-  return <div className="min-w-96 rounded-lg bg-primary-foreground p-5">{children}</div>;
+  return <div className="min-w-96 rounded-lg bg-primary-foreground p-5 mb-4">{children}</div>;
 }
 
 function Handle({ className }: { className?: string }) {
@@ -185,7 +186,7 @@ const Tasks = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <div ref={ref} className="h-[calc(100dvh-200px)] select-none">
+    <div ref={ref} className="h-[calc(100dvh-210px)] select-none">
       {children}
     </div>
   );
